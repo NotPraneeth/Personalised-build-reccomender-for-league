@@ -78,10 +78,16 @@ app.get('/matches/:tier/:division', async (req,res) => {
                 }
 
                 const matchData_apiUrl = `https://sea.api.riotgames.com/lol/match/v5/matches/${matchId}?api_key=${riotApiKey}`
+                const matchTimeline_apiUrl = `https://sea.api.riotgames.com/lol/match/v5/matches/${matchId}/timeline?api_key=${riotApiKey}`
 
                 const matchData = await axios.get(matchData_apiUrl)
+                sleep(1500) // sleep to avoid hitting rate limits
+                const matchTimeline = await axios.get(matchTimeline_apiUrl)
 
-                const matchupsToSave = analyzeMatchData(matchData.data)
+
+                
+
+                const matchupsToSave = analyzeMatchData(matchData.data, matchTimeline.data)
 
                 if(matchupsToSave && matchupsToSave.length > 0){
                     matchupsSaved += matchupsToSave.length

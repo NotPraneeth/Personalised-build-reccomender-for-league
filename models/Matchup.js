@@ -10,6 +10,7 @@ const matchupSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    gameCreation: Number,
     championId: {
         type: Number,
         required: true
@@ -68,7 +69,10 @@ const matchupSchema = new mongoose.Schema({
                 required: true
             }
         }
-    } 
+    } ,
+    summonerSpells:[Number],
+    skillOrder: String,
+    startingItems: [Number],
     
 })
 matchupSchema.index({ matchId: 1, championId: 1 }, { unique: true });
