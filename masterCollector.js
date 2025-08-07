@@ -69,12 +69,12 @@ const runFullCollection = async () => {
                     const matchDetailsUrl = `https://sea.api.riotgames.com/lol/match/v5/matches/${matchId}?api_key=${riotApiKey}`;
                     const matchTimelineUrl = `https://sea.api.riotgames.com/lol/match/v5/matches/${matchId}/timeline?api_key=${riotApiKey}`;
 
+                    console.log(`Processing match ${matchId}...`);
                     
                     const detailsResponse = await axios.get(matchDetailsUrl, { timeout: AXIOS_TIMEOUT });
                     await sleep(1500);
                     const timelineResponse = await axios.get(matchTimelineUrl, { timeout: AXIOS_TIMEOUT });
 
-                    console.log(`Processing match ${matchId}...`);
 
                     const matchupsToSave = analyzeMatchData(detailsResponse.data, timelineResponse.data);
                     
