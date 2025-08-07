@@ -71,6 +71,7 @@ const runFullCollection = async () => {
 
                     
                     const detailsResponse = await axios.get(matchDetailsUrl, { timeout: AXIOS_TIMEOUT });
+                    await sleep(1500);
                     const timelineResponse = await axios.get(matchTimelineUrl, { timeout: AXIOS_TIMEOUT });
 
                     console.log(`Processing match ${matchId}...`);
@@ -79,7 +80,7 @@ const runFullCollection = async () => {
                     
                     if (matchupsToSave.length > 0) {
                         await Matchup.insertMany(matchupsToSave);
-                        console.log(`  -> Saved ${matchupsToSave.length} records for match ${matchId}`);
+                        console.log(`  -> Saved +${matchupsToSave.length} records for match ${matchId}`);
                     }
                     
                     await sleep(1500);
