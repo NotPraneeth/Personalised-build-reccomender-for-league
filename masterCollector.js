@@ -45,6 +45,7 @@ const runFullCollection = async () => {
                     console.log(` -> Processing player ${playerCounter} of ${players.length}...`); 
                     const matchHistoryUrl = `https://sea.api.riotgames.com/lol/match/v5/matches/by-puuid/${player.puuid}/ids?type=ranked&start=0&count=20&api_key=${riotApiKey}`;
                     const matchHistoryResponse = await axios.get(matchHistoryUrl, { timeout: AXIOS_TIMEOUT });
+                    console.log('player matches fetched:', matchHistoryResponse.data)
                     allMatchIds.push(...matchHistoryResponse.data);
                     await sleep(1500);
                 } catch (e) {
@@ -71,6 +72,8 @@ const runFullCollection = async () => {
                     
                     const detailsResponse = await axios.get(matchDetailsUrl, { timeout: AXIOS_TIMEOUT });
                     const timelineResponse = await axios.get(matchTimelineUrl, { timeout: AXIOS_TIMEOUT });
+
+                    console.log(`Processing match ${matchId}...`);
 
                     const matchupsToSave = analyzeMatchData(detailsResponse.data, timelineResponse.data);
                     
