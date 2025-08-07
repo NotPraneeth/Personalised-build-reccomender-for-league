@@ -31,10 +31,6 @@ const matchupSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    role: {
-        type: String,
-        required: true
-    },
     win: {
         type: Boolean,
         required: true
