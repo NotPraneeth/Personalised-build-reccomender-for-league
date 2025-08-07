@@ -7,6 +7,7 @@ const Matchup = require('../models/Matchup');
 const AggregatedBuild = require('../models/AggregatedBuild');
 
 const nameToIdMap = require('./championNameAndId.json');
+const itemInfo = require('./itemInfo.json');
 
 const idToNameMap = Object.fromEntries(
     Object.entries(nameToIdMap).map(([name, id]) => [id, name])
@@ -54,7 +55,9 @@ const runAggregation = async () => {
             for (const game of games) {
                 if (game.items) {
                     for (const itemId of game.items) {
-                        itemCounts.set(itemId, (itemCounts.get(itemId) || 0) + 1);
+                        if(itemId && itemInfo.data[itemId] && itemInfo.data[itemId].gold.total > 1500){
+                            itemCounts.set(itemId, (itemCounts.get(itemId) || 0) + 1);
+                        }
                     }
                 }
             }
