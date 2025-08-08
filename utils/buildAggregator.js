@@ -1,4 +1,3 @@
-
 const dotenv = require('dotenv');
 dotenv.config({ path: require('path').resolve(__dirname, '../.env') });
 
@@ -24,7 +23,6 @@ const runAggregation = async () => {
         console.log(`Deleting old aggregated data for patch ${currentPatch}...`);
         await AggregatedBuild.deleteMany({ patch: currentPatch });
 
-       
         console.log(`Fetching all raw matchups for patch ${currentPatch}...`);
         const allMatchups = await Matchup.find({ patch: currentPatch }).lean();
         console.log(`Found ${allMatchups.length} raw matchup records to process.`);
@@ -34,38 +32,72 @@ const runAggregation = async () => {
             return;
         }
 
-      
+        console.log('Pre-computing general item popularity for all champions...');
+        const generalChampionItemCounts = new Map();
+        for (const match of allMatchups) {
+            const champId = match.championId;
+            if (!generalChampionItemCounts.has(champId)) {
+                generalChampionItemCounts.set(champId, new Map());
+            }
+
+            const champItemMap = generalChampionItemCounts.get(champId);
+            if (match.items) {
+                for (const itemId of match.items) {
+                    if (itemId && itemInfo.data[itemId] && itemInfo.data[itemId].gold.total > 1500) {
+                        champItemMap.set(itemId, (champItemMap.get(itemId) || 0) + 1);
+                    }
+                }
+            }
+        }
+        
+        const generalPopularItems = new Map();
+        for (const [champId, itemMap] of generalChampionItemCounts.entries()) {
+            const sortedItems = [...itemMap.entries()]
+                .sort((a, b) => b[1] - a[1])
+                .map(entry => entry[0]);
+            generalPopularItems.set(champId, sortedItems);
+        }
+        console.log('Finished pre-computing general item data.');
+
         const groupedMatchups = new Map();
         for (const match of allMatchups) {
             const key = `${match.championId}-${match.opponentChampionId}-${match.lane}`;
             if (!groupedMatchups.has(key)) {
-                groupedMatchups.set(key, []); 
+                groupedMatchups.set(key, []);
             }
-            groupedMatchups.get(key).push(match); 
+            groupedMatchups.get(key).push(match);
         }
         console.log(`Grouped data into ${groupedMatchups.size} unique matchups.`);
-
        
         const finalBuildsToSave = [];
 
         for (const [key, games] of groupedMatchups.entries()) {
             
-          
+            const [championIdStr, opponentChampionIdStr, lane] = key.split('-');
+            const championId = Number(championIdStr);
             const itemCounts = new Map();
             for (const game of games) {
                 if (game.items) {
                     for (const itemId of game.items) {
-                        if(itemId && itemInfo.data[itemId] && itemInfo.data[itemId].gold.total > 1500){
+                        if (itemId && itemInfo.data[itemId] && itemInfo.data[itemId].gold.total > 1500) {
                             itemCounts.set(itemId, (itemCounts.get(itemId) || 0) + 1);
                         }
                     }
                 }
             }
-            const mostFrequentItems = [...itemCounts.entries()]
-                .sort((a, b) => b[1] - a[1]) 
-                .slice(0, 6)                 
-                .map(entry => entry[0]);    
+            let mostFrequentItems = [...itemCounts.entries()]
+                .sort((a, b) => b[1] - a[1])
+                .map(entry => entry[0]);
 
+            if (mostFrequentItems.length < 6) {
+                const champGeneralItems = generalPopularItems.get(championId) || [];
+                for (const generalItem of champGeneralItems) {
+                    if (mostFrequentItems.length >= 6) break;
+                    if (!mostFrequentItems.includes(generalItem)) {
+                        mostFrequentItems.push(generalItem);
+                    }
+                }
+            }
            
             const runeCounts = new Map();
             for (const game of games) {
@@ -80,7 +112,6 @@ const runAggregation = async () => {
                 mostCommonRunes = JSON.parse(mostCommonRunesKey);
             }
             
-            
             const skillOrderCounts = new Map();
             for (const game of games) {
                 if (game.skillOrder) {
@@ -92,11 +123,10 @@ const runAggregation = async () => {
                 mostCommonSkillOrder = [...skillOrderCounts.entries()].reduce((a, b) => b[1] > a[1] ? b : a)[0];
             }
 
-            
             const summonerSpellCounts = new Map();
             for (const game of games) {
                 if (game.summonerSpells) {
-                    const spellKey = [...game.summonerSpells].sort().join(','); // Sort to treat [4,12] and [12,4] as the same
+                    const spellKey = [...game.summonerSpells].sort().join(',');
                     summonerSpellCounts.set(spellKey, (summonerSpellCounts.get(spellKey) || 0) + 1);
                 }
             }
@@ -105,7 +135,6 @@ const runAggregation = async () => {
                 const mostCommonSpellsKey = [...summonerSpellCounts.entries()].reduce((a, b) => b[1] > a[1] ? b : a)[0];
                 mostCommonSummonerSpells = mostCommonSpellsKey.split(',').map(Number);
             }
-
            
             const startingItemCounts = new Map();
             for (const game of games) {
@@ -120,22 +149,20 @@ const runAggregation = async () => {
                 mostCommonStartingItems = mostCommonStartKey.split(',').map(Number);
             }
 
-       
-            const [championId, opponentChampionId, lane] = key.split('-');
             const totalGames = games.length;
             const wins = games.filter(g => g.win).length;
 
             const finalBuild = {
                 patch: currentPatch,
                 lane: lane,
-                championId: Number(championId),
-                opponentChampionId: Number(opponentChampionId),
-                championName: idToNameMap[championId],
-                opponentChampionName: idToNameMap[opponentChampionId],
+                championId: championId,
+                opponentChampionId: Number(opponentChampionIdStr),
+                championName: idToNameMap[championIdStr],
+                opponentChampionName: idToNameMap[opponentChampionIdStr],
                 sampleSize: totalGames,
                 winRate: parseFloat((wins / totalGames * 100).toFixed(2)),
                 runes: mostCommonRunes,
-                items: mostFrequentItems,
+                items: mostFrequentItems.slice(0, 6),
                 skillOrder: mostCommonSkillOrder,
                 summonerSpells: mostCommonSummonerSpells,
                 startingItems: mostCommonStartingItems,
@@ -146,7 +173,7 @@ const runAggregation = async () => {
 
         console.log(`Saving ${finalBuildsToSave.length} new aggregated build documents...`);
         if (finalBuildsToSave.length > 0) {
-            await AggregatedBuild.insertMany(finalBuildsToSave);
+            await AggregatedBuild.insertMany(finalBuildsToSave, { ordered: false });
         }
         
         console.log("\n--- AGGREGATION PROCESS COMPLETE ---");
