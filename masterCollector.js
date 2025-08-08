@@ -11,7 +11,11 @@ const Matchup = require('./models/Matchup');
 const riotApiKey = process.env.API_KEY;
 
 const TARGET_TIERS = [
- 
+    { tier: 'EMERALD',  division: 'IV' },
+    { tier: 'EMERALD',  division: 'III' },
+    { tier: 'EMERALD',  division: 'II' },
+    { tier: 'EMERALD',  division: 'I' },
+
     { tier: 'DIAMOND',  division: 'IV' },
     { tier: 'DIAMOND',  division: 'III' },
     { tier: 'DIAMOND',  division: 'II' },
