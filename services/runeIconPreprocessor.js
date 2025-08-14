@@ -20,7 +20,7 @@ const runeIconPreprocessor = async () => {
         const runesUrl = `https://ddragon.leagueoflegends.com/cdn/${latestVersion}/data/en_US/runesReforged.json`;
         const runesResponse = await axios.get(runesUrl);
         const runesData = runesResponse.data;
-        const baseUrl = `https://ddragon.leagueoflegends.com/cdn/img/`;
+        const baseUrl = ``;
 
         runesData.forEach(tree => {
             runeIdtoRuneIcon.set(tree.id, `${baseUrl}${tree.icon}`);

@@ -18,7 +18,7 @@ const runAggregation = async () => {
         await mongoose.connect(process.env.MONGO_URI);
         console.log('Successfully connected.');
 
-        const currentPatch = "15.11";
+        const currentPatch = "15.16";
 
         console.log(`Deleting old aggregated data for patch ${currentPatch}...`);
         await AggregatedBuild.deleteMany({ patch: currentPatch });

@@ -52,7 +52,7 @@ const runFullCollection = async () => {
                 playerCounter++;
                 try {
                     console.log(` -> Processing player ${playerCounter} of ${players.length}...`); 
-                    const matchHistoryUrl = `https://sea.api.riotgames.com/lol/match/v5/matches/by-puuid/${player.puuid}/ids?type=ranked&start=0&count=20&api_key=${riotApiKey}`;
+                    const matchHistoryUrl = `https://sea.api.riotgames.com/lol/match/v5/matches/by-puuid/${player.puuid}/ids?type=ranked&start=0&count=50&api_key=${riotApiKey}`;
                     const matchHistoryResponse = await axios.get(matchHistoryUrl, { timeout: AXIOS_TIMEOUT });
                     console.log('player matches fetched:', matchHistoryResponse.data)
                     allMatchIds.push(...matchHistoryResponse.data);
