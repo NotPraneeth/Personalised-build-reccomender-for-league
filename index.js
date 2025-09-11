@@ -50,6 +50,9 @@ app.get('/api/test/:championName/:opponentChampionName', async (req, res) => {
 
         const buildData = await AggregatedBuild.findOne({ championName, opponentChampionName });
 
+        console.log(buildData)
+
+
         if (!buildData) {
             return res.status(404).json({ message: "Matchup doesn't exist yet." });
         }
@@ -86,9 +89,11 @@ app.get('/api/test/:championName/:opponentChampionName', async (req, res) => {
                     }))
                 }
             },
+            startingItems: buildData.startingItems.filter(item=> item!= 3340),
+            summonerSpells: buildData.summonerSpells,
+            skillOrder: buildData.skillOrder
         };
         res.status(200).json(dataToSend);
-        // res.status(200).json(buildData);
     } catch (error) {
         console.error("Error in /api/test route:", error);
         res.status(500).json({ message: "An internal server error occurred." });
