@@ -58,9 +58,12 @@ app.get('/api/test/:championName/:opponentChampionName', async (req, res) => {
         }
 
         const itemNames = buildData.items.map(itemId => {
-            return itemInfo.data[itemId]?.name || `Unknown Item (${itemId})`;
+            return {
+                name: itemInfo.data[itemId]?.name || `Unknown Item (${itemId})`,
+                id: itemId
+            };
         });
-        
+
         const runes = buildData.runes;
 
         const dataToSend = {
@@ -89,7 +92,7 @@ app.get('/api/test/:championName/:opponentChampionName', async (req, res) => {
                     }))
                 }
             },
-            startingItems: buildData.startingItems.filter(item=> item!= 3340),
+            startingItems: buildData.startingItems.filter(item => item != 3340),
             summonerSpells: buildData.summonerSpells,
             skillOrder: buildData.skillOrder
         };
