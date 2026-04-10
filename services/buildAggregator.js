@@ -18,7 +18,7 @@ const runAggregation = async () => {
         await mongoose.connect(process.env.MONGO_URI);
         console.log('Successfully connected.');
 
-        const currentPatch = "15.16";
+        const currentPatch = await axios.get('https://ddragon.leagueoflegends.com/api/versions.json');
 
         console.log(`Deleting old aggregated data for patch ${currentPatch}...`);
         await AggregatedBuild.deleteMany({ patch: currentPatch });
@@ -49,7 +49,7 @@ const runAggregation = async () => {
                 }
             }
         }
-        
+
         const generalPopularItems = new Map();
         for (const [champId, itemMap] of generalChampionItemCounts.entries()) {
             const sortedItems = [...itemMap.entries()]
@@ -68,11 +68,11 @@ const runAggregation = async () => {
             groupedMatchups.get(key).push(match);
         }
         console.log(`Grouped data into ${groupedMatchups.size} unique matchups.`);
-       
+
         const finalBuildsToSave = [];
 
         for (const [key, games] of groupedMatchups.entries()) {
-            
+
             const [championIdStr, opponentChampionIdStr, lane] = key.split('-');
             const championId = Number(championIdStr);
             const itemCounts = new Map();
@@ -98,7 +98,7 @@ const runAggregation = async () => {
                     }
                 }
             }
-           
+
             const runeCounts = new Map();
             for (const game of games) {
                 if (game.runes) {
@@ -111,7 +111,7 @@ const runAggregation = async () => {
                 const mostCommonRunesKey = [...runeCounts.entries()].reduce((a, b) => b[1] > a[1] ? b : a)[0];
                 mostCommonRunes = JSON.parse(mostCommonRunesKey);
             }
-            
+
             const skillOrderCounts = new Map();
             for (const game of games) {
                 if (game.skillOrder) {
@@ -135,7 +135,7 @@ const runAggregation = async () => {
                 const mostCommonSpellsKey = [...summonerSpellCounts.entries()].reduce((a, b) => b[1] > a[1] ? b : a)[0];
                 mostCommonSummonerSpells = mostCommonSpellsKey.split(',').map(Number);
             }
-           
+
             const startingItemCounts = new Map();
             for (const game of games) {
                 if (game.startingItems) {
@@ -175,7 +175,7 @@ const runAggregation = async () => {
         if (finalBuildsToSave.length > 0) {
             await AggregatedBuild.insertMany(finalBuildsToSave, { ordered: false });
         }
-        
+
         console.log("\n--- AGGREGATION PROCESS COMPLETE ---");
 
     } catch (error) {
