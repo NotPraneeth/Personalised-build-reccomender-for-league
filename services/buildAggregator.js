@@ -19,12 +19,13 @@ const runAggregation = async () => {
         console.log('Successfully connected.');
 
         const currentPatch = await axios.get('https://ddragon.leagueoflegends.com/api/versions.json');
+        const latestVersion = currentPatch.data[0];
 
-        console.log(`Deleting old aggregated data for patch ${currentPatch}...`);
-        await AggregatedBuild.deleteMany({ patch: currentPatch });
+        console.log(`Deleting old aggregated data for patch ${latestVersion}...`);
+        await AggregatedBuild.deleteMany({ patch: latestVersion });
 
-        console.log(`Fetching all raw matchups for patch ${currentPatch}...`);
-        const allMatchups = await Matchup.find({ patch: currentPatch }).lean();
+        console.log(`Fetching all raw matchups for patch ${latestVersion}...`);
+        const allMatchups = await Matchup.find({ patch: latestVersion }).lean();
         console.log(`Found ${allMatchups.length} raw matchup records to process.`);
 
         if (allMatchups.length === 0) {
