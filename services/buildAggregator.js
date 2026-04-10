@@ -5,8 +5,8 @@ const mongoose = require('mongoose');
 const Matchup = require('../models/Matchup');
 const AggregatedBuild = require('../models/AggregatedBuild');
 
-const nameToIdMap = require('./championNameAndId.json');
-const itemInfo = require('./itemInfo.json');
+const nameToIdMap = require('../utils/championNameAndId.json');
+const itemInfo = require('../utils/itemInfo.json');
 
 const idToNameMap = Object.fromEntries(
     Object.entries(nameToIdMap).map(([name, id]) => [id, name])
