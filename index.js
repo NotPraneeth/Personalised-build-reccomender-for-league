@@ -9,7 +9,7 @@ const cors = require('cors');
 const AggregatedBuild = require('./models/AggregatedBuild');
 const itemInfo = require('./utils/itemInfo.json');
 
-const { runeIconPreprocessor, runeIdtoRuneIcon } = require('./services/runeIconPreprocessor');
+const { runeIconPreprocessor, runeIdtoRuneIcon } = require('./utils/runeIconPreprocessor');
 
 const app = express();
 
