@@ -3,8 +3,7 @@ const mongoose = require('mongoose')
 const matchupSchema = new mongoose.Schema({
     matchId: {
         type: String,
-        required: true,
-        index: true
+        required: true
     },
     patch: {
         type: String,
